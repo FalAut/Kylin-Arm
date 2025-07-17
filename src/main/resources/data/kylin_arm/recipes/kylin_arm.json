@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "minecraft:blaze_powder"
+    },
+    "B": {
+      "item": "minecraft:netherite_pickaxe"
+    },
+    "C": {
+      "item": "minecraft:netherite_axe"
+    },
+    "D": {
+      "item": "minecraft:nether_star"
+    },
+    "E": {
+      "item": "minecraft:netherite_hoe"
+    },
+    "F": {
+      "item": "minecraft:netherite_shovel"
+    }
+  },
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "result": {
+    "item": "kylin_arm:kylin_arm"
+  }
+}
