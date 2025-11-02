@@ -4,24 +4,24 @@ import com.falaut.kylin_arm.KylinArm;
 import com.falaut.kylin_arm.config.KylinArmConfig;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.TierSortingRegistry;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.common.ForgeMod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.Optional;
 
 public class KylinArmHandler {
     public static boolean isKylinArmEquipped(LivingEntity entity) {
-        return CuriosApi.getCuriosHelper().findEquippedCurio(KylinArm.KYLIN_ARM.get(), entity).isPresent();
+        return CuriosApi.getCuriosInventory(entity).flatMap(curiosInventory -> curiosInventory.findFirstCurio(KylinArm.KYLIN_ARM.get())).isPresent();
     }
 
     public static Optional<Tier> getToolTier() {
@@ -35,13 +35,32 @@ public class KylinArmHandler {
         };
     }
 
+    public static boolean isCorrectTierForDrops(int harvestLevel, BlockState state) {
+        if (!state.requiresCorrectToolForDrops()) {
+            return true;
+        }
+
+        if (state.is(BlockTags.NEEDS_DIAMOND_TOOL)) {
+            return harvestLevel >= 4;
+        } else if (state.is(BlockTags.NEEDS_IRON_TOOL)) {
+            return harvestLevel >= 3;
+        } else if (state.is(BlockTags.NEEDS_STONE_TOOL)) {
+            return harvestLevel >= 2;
+        } else {
+            return harvestLevel >= 1;
+        }
+    }
+
     public static boolean canKylinArmHarvest(LivingEntity entity, BlockState state) {
-        if (isKylinArmEquipped(entity)) {
+        if (isKylinArmEquipped(entity) && entity instanceof Player player) {
             Optional<Tier> tier = getToolTier();
 
-            return tier.isPresent()
-                    && TierSortingRegistry.isCorrectTierForDrops(tier.get(), state)
-                    && state.is(TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("kylin_arm", "mineable/kylin_arm")));
+            if (tier.isPresent()) {
+                int harvestLevel = KylinArmConfig.HARVEST_LEVEL.get();
+
+                return state.is(TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("kylin_arm", "mineable/kylin_arm")))
+                        && isCorrectTierForDrops(harvestLevel, state);
+            }
         }
         return false;
     }
@@ -49,7 +68,6 @@ public class KylinArmHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onHarvestCheck(PlayerEvent.HarvestCheck event) {
         Player player = event.getEntity();
-
         event.setCanHarvest(event.canHarvest() || canKylinArmHarvest(player, event.getTargetBlock()));
     }
 
@@ -58,10 +76,10 @@ public class KylinArmHandler {
         Player player = event.getEntity();
 
         if (isKylinArmEquipped(player)) {
-            float baseSpeed = event.getOriginalSpeed() * KylinArmConfig.BREAK_SPEED_BONUS.get().floatValue();;
+            float baseSpeed = event.getOriginalSpeed() * KylinArmConfig.BREAK_SPEED_BONUS.get().floatValue();
             float multiplier = 1;
 
-            boolean isInWater = player.isEyeInFluidType(ForgeMod.WATER_TYPE.get());
+            boolean isInWater = player.isEyeInFluidType(NeoForgeMod.WATER_TYPE.value());
             boolean isInAir = !player.onGround();
 
             if (isInWater || isInAir) {

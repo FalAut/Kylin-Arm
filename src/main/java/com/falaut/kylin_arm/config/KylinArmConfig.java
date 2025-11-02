@@ -1,13 +1,13 @@
 package com.falaut.kylin_arm.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class KylinArmConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.IntValue HARVEST_LEVEL;
-    public static final ForgeConfigSpec.DoubleValue BREAK_SPEED_BONUS;
+    public static final ModConfigSpec.IntValue HARVEST_LEVEL;
+    public static final ModConfigSpec.DoubleValue BREAK_SPEED_BONUS;
 
     static {
         BUILDER.push("Kylin Arm Configuration");
